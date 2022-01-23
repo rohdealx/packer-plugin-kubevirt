@@ -23,17 +23,17 @@ type FlatConfig struct {
 	SSHTimeout           *string               `mapstructure:"ssh_timeout" cty:"ssh_timeout" hcl:"ssh_timeout"`
 	SSHKeepAliveInterval *string               `mapstructure:"ssh_keep_alive_interval" cty:"ssh_keep_alive_interval" hcl:"ssh_keep_alive_interval"`
 	SSHHandshakeAttempts *int                  `mapstructure:"ssh_handshake_attempts" cty:"ssh_handshake_attempts" hcl:"ssh_handshake_attempts"`
-	SSHUsername          *string               `mapstructure:"ssh_username" cty:"ssh_username" hcl:"ssh_username"`
-	SSHPassword          *string               `mapstructure:"ssh_password" cty:"ssh_password" hcl:"ssh_password"`
+	SSHUsername          *string               `mapstructure:"ssh_username" required:"true" cty:"ssh_username" hcl:"ssh_username"`
+	SSHPassword          *string               `mapstructure:"ssh_password" required:"true" cty:"ssh_password" hcl:"ssh_password"`
 	Namespace            *string               `mapstructure:"namespace" cty:"namespace" hcl:"namespace"`
 	Name                 *string               `mapstructure:"name" cty:"name" hcl:"name"`
+	DataVolume           *FlatDataVolumeConfig `mapstructure:"data_volume" cty:"data_volume" hcl:"data_volume"`
 	EFI                  *bool                 `mapstructure:"efi" cty:"efi" hcl:"efi"`
 	SecureBoot           *bool                 `mapstructure:"secure_boot" cty:"secure_boot" hcl:"secure_boot"`
 	CPU                  *string               `mapstructure:"cpu" cty:"cpu" hcl:"cpu"`
 	Memory               *string               `mapstructure:"memory" cty:"memory" hcl:"memory"`
 	HugepagesPageSize    *string               `mapstructure:"hugepages_page_size" required:"false" cty:"hugepages_page_size" hcl:"hugepages_page_size"`
 	GPUs                 []string              `mapstructure:"gpus" cty:"gpus" hcl:"gpus"`
-	DataVolume           *FlatDataVolumeConfig `mapstructure:"data_volume" cty:"data_volume" hcl:"data_volume"`
 	Disks                []FlatDiskConfig      `mapstructure:"disk" cty:"disk" hcl:"disk"`
 }
 
@@ -66,13 +66,13 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"ssh_password":               &hcldec.AttrSpec{Name: "ssh_password", Type: cty.String, Required: false},
 		"namespace":                  &hcldec.AttrSpec{Name: "namespace", Type: cty.String, Required: false},
 		"name":                       &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
+		"data_volume":                &hcldec.BlockSpec{TypeName: "data_volume", Nested: hcldec.ObjectSpec((*FlatDataVolumeConfig)(nil).HCL2Spec())},
 		"efi":                        &hcldec.AttrSpec{Name: "efi", Type: cty.Bool, Required: false},
 		"secure_boot":                &hcldec.AttrSpec{Name: "secure_boot", Type: cty.Bool, Required: false},
 		"cpu":                        &hcldec.AttrSpec{Name: "cpu", Type: cty.String, Required: false},
 		"memory":                     &hcldec.AttrSpec{Name: "memory", Type: cty.String, Required: false},
 		"hugepages_page_size":        &hcldec.AttrSpec{Name: "hugepages_page_size", Type: cty.String, Required: false},
 		"gpus":                       &hcldec.AttrSpec{Name: "gpus", Type: cty.List(cty.String), Required: false},
-		"data_volume":                &hcldec.BlockSpec{TypeName: "data_volume", Nested: hcldec.ObjectSpec((*FlatDataVolumeConfig)(nil).HCL2Spec())},
 		"disk":                       &hcldec.BlockListSpec{TypeName: "disk", Nested: hcldec.ObjectSpec((*FlatDiskConfig)(nil).HCL2Spec())},
 	}
 	return s

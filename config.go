@@ -20,29 +20,47 @@ const BuilderId = "rohdealx.kubevirt"
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 
+	// Path to the kubeconfig file. Can also be set via the `KUBECONFIG` environment variable.
 	KubeConfigPath string `mapstructure:"kube_config_path"`
 
-	SSHPort              int           `mapstructure:"ssh_port"`
-	SSHTimeout           time.Duration `mapstructure:"ssh_timeout"`
+	// The port to connect to ssh. This defaults to `22`.
+	SSHPort int `mapstructure:"ssh_port"`
+	// The time to wait for ssh to become available. Packer uses this to
+	// determine when the machine has booted so this is usually quite long.
+	// Example value: `10m`.
+	SSHTimeout time.Duration `mapstructure:"ssh_timeout"`
+	// How often to send "keep alive" messages to the server.
+	// Example value: `10s`. Defaults to `5s`.
 	SSHKeepAliveInterval time.Duration `mapstructure:"ssh_keep_alive_interval"`
-	SSHHandshakeAttempts int           `mapstructure:"ssh_handshake_attempts"`
-	SSHUsername          string        `mapstructure:"ssh_username"`
-	SSHPassword          string        `mapstructure:"ssh_password"`
+	// The number of handshakes to attempt with ssh once it can connect. This
+	// defaults to `10`.
+	SSHHandshakeAttempts int `mapstructure:"ssh_handshake_attempts"`
+	// The username used to authenticate.
+	SSHUsername string `mapstructure:"ssh_username" required:"true"`
+	// The plaintext password used to authenticate.
+	SSHPassword string `mapstructure:"ssh_password" required:"true"`
 
-	Namespace string `mapstructure:"namespace"`
-	Name      string `mapstructure:"name"`
+	Namespace  string           `mapstructure:"namespace"`
+	Name       string           `mapstructure:"name"`
+	DataVolume DataVolumeConfig `mapstructure:"data_volume"`
 
-	EFI        bool `mapstructure:"efi"`
+	// If `true`, efi will be used instead of bios.
+	EFI bool `mapstructure:"efi"`
+	// Implies [`efi`](#efi) `true`.
 	SecureBoot bool `mapstructure:"secure_boot"`
 
-	CPU    string `mapstructure:"cpu"`
+	// In [Kubernetes cpu resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu).
+	CPU string `mapstructure:"cpu"`
+	// In [Kubernetes memory resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory).
 	Memory string `mapstructure:"memory"`
 	// The hugepage size, for x86_64 architecture valid values are 1Gi and 2Mi.
-	HugepagesPageSize string   `mapstructure:"hugepages_page_size" required:"false"`
-	GPUs              []string `mapstructure:"gpus"`
+	HugepagesPageSize string `mapstructure:"hugepages_page_size" required:"false"`
+	// List of gpus device names e.g. `nvidia.com/TU104GL_Tesla_T4`.
+	GPUs []string `mapstructure:"gpus"`
 
-	DataVolume DataVolumeConfig `mapstructure:"data_volume"`
-	Disks      []DiskConfig     `mapstructure:"disk"`
+	// There has to be at least one disk,
+	// this first disk has to be of type `datavolume` and is the resulting artifact.
+	Disks []DiskConfig `mapstructure:"disk"`
 
 	ctx interpolate.Context
 }
@@ -94,7 +112,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 		c.SSHKeepAliveInterval = 5 * time.Second
 	}
 	if c.SSHHandshakeAttempts == 0 {
-		c.SSHHandshakeAttempts = 20
+		c.SSHHandshakeAttempts = 10
 	}
 	if c.SSHUsername == "" {
 		errs = packer.MultiErrorAppend(errs, errors.New("ssh_username must be specified"))
@@ -131,7 +149,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 		}
 	}
 
-	// TODO DataVolume
 	// TODO Disks
 
 	if errs != nil && len(errs.Errors) > 0 {

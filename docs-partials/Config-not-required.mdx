@@ -1,37 +1,38 @@
 <!-- Code generated from the comments of the Config struct in config.go; DO NOT EDIT MANUALLY -->
 
-- `kube_config_path` (string) - Kube Config Path
+- `kube_config_path` (string) - Path to the kubeconfig file. Can also be set via the `KUBECONFIG` environment variable.
 
-- `ssh_port` (int) - SSH Port
+- `ssh_port` (int) - The port to connect to ssh. This defaults to `22`.
 
-- `ssh_timeout` (duration string | ex: "1h5m2s") - SSH Timeout
+- `ssh_timeout` (duration string | ex: "1h5m2s") - The time to wait for ssh to become available. Packer uses this to
+  determine when the machine has booted so this is usually quite long.
+  Example value: `10m`.
 
-- `ssh_keep_alive_interval` (duration string | ex: "1h5m2s") - SSH Keep Alive Interval
+- `ssh_keep_alive_interval` (duration string | ex: "1h5m2s") - How often to send "keep alive" messages to the server.
+  Example value: `10s`. Defaults to `5s`.
 
-- `ssh_handshake_attempts` (int) - SSH Handshake Attempts
-
-- `ssh_username` (string) - SSH Username
-
-- `ssh_password` (string) - SSH Password
+- `ssh_handshake_attempts` (int) - The number of handshakes to attempt with ssh once it can connect. This
+  defaults to `10`.
 
 - `namespace` (string) - Namespace
 
 - `name` (string) - Name
 
-- `efi` (bool) - EFI
+- `data_volume` (DataVolumeConfig) - Data Volume
 
-- `secure_boot` (bool) - Secure Boot
+- `efi` (bool) - If `true`, efi will be used instead of bios.
 
-- `cpu` (string) - CPU
+- `secure_boot` (bool) - Implies [`efi`](#efi) `true`.
 
-- `memory` (string) - Memory
+- `cpu` (string) - In [Kubernetes cpu resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-cpu).
+
+- `memory` (string) - In [Kubernetes memory resource units](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory).
 
 - `hugepages_page_size` (string) - The hugepage size, for x86_64 architecture valid values are 1Gi and 2Mi.
 
-- `gpus` ([]string) - GP Us
+- `gpus` ([]string) - List of gpus device names e.g. `nvidia.com/TU104GL_Tesla_T4`.
 
-- `data_volume` (DataVolumeConfig) - Data Volume
-
-- `disk` ([]DiskConfig) - Disks
+- `disk` ([]DiskConfig) - There has to be at least one disk,
+  this first disk has to be of type `datavolume` and is the resulting artifact.
 
 <!-- End of code generated from the comments of the Config struct in config.go; -->
