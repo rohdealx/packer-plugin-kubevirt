@@ -15,7 +15,7 @@ func TestRequiredParameters(t *testing.T) {
 	}
 	errs, ok := err.(*packer.MultiError)
 	if !ok {
-		t.Fatal("Expected errors to be packersdk.MultiError")
+		t.Fatal("Expected errors to be packer.MultiError")
 	}
 	required := []string{"name", "ssh_username", "ssh_password"}
 	for _, param := range required {
