@@ -100,6 +100,9 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 
 	if c.KubeConfigPath == "" {
 		c.KubeConfigPath = os.Getenv("KUBECONFIG")
+		if c.KubeConfigPath == "" {
+			errs = packer.MultiErrorAppend(errs, errors.New("kube_config_path must be specified"))
+		}
 	}
 
 	if c.SSHPort == 0 {

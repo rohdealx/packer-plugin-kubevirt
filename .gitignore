@@ -1,3 +1,5 @@
 /.docs/
 /packer-plugin-kubevirt
-/kubeconfig
+kubeconfig
+*test.pkr.hcl
+*test.txt

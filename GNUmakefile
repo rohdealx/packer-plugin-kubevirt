@@ -8,8 +8,6 @@ HASHICORP_PACKER_PLUGIN_SDK_VERSION?=$(shell go list -m github.com/hashicorp/pac
 .PHONY: dev
 
 build:
-	@go mod tidy
-	@go fmt
 	@go build -o ${BINARY}
 
 dev: build

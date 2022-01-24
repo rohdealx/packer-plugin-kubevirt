@@ -23,7 +23,6 @@ type StepCreateDataVolume struct {
 func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	cdiClient := state.Get("cdi_client").(cdiclientv1beta1.CdiV1beta1Interface)
-	volumeMode := corev1.PersistentVolumeMode(s.Config.VolumeMode)
 	storage, err := resource.ParseQuantity(s.Config.Size)
 	if err != nil {
 		state.Put("error", fmt.Errorf("invalid data volume size: %s", err))
@@ -43,15 +42,26 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 						"storage": storage,
 					},
 				},
-				VolumeMode:       &volumeMode,
-				StorageClassName: &s.Config.StorageClassName,
 			},
 		},
+	}
+	if s.Config.VolumeMode != "" {
+		volumeMode := corev1.PersistentVolumeMode(s.Config.VolumeMode)
+		dv.Spec.PVC.VolumeMode = &volumeMode
+	}
+	if s.Config.StorageClassName != "" {
+		dv.Spec.PVC.StorageClassName = &s.Config.StorageClassName
 	}
 	if s.Config.Source.Type == "http" {
 		dv.Spec.Source = &cdiv1.DataVolumeSource{
 			HTTP: &cdiv1.DataVolumeSourceHTTP{
 				URL: s.Config.Source.URL,
+			},
+		}
+	} else if s.Config.Source.Type == "registry" {
+		dv.Spec.Source = &cdiv1.DataVolumeSource{
+			Registry: &cdiv1.DataVolumeSourceRegistry{
+				URL: &s.Config.Source.URL,
 			},
 		}
 	} else if s.Config.Source.Type == "blank" {
@@ -94,7 +104,7 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 			} else if dv.Status.Phase == cdiv1.Failed {
 				state.Put("error", errors.New("Data volume failed."))
 				return multistep.ActionHalt
-			} else if !contains(inProgressPhases, dv.Status.Phase) {
+			} else if dv.Status.Phase != "" && !contains(inProgressPhases, dv.Status.Phase) {
 				state.Put("error", fmt.Errorf("Unexpected data volume phase: %s.", dv.Status.Phase))
 				return multistep.ActionHalt
 			}
