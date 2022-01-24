@@ -1,5 +1,6 @@
 /.docs/
 /packer-plugin-kubevirt
 kubeconfig
+crash.log
 *test.pkr.hcl
 *test.txt

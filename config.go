@@ -65,7 +65,6 @@ type Config struct {
 }
 
 type DiskConfig struct {
-	Name     string `mapstructure:"name"`
 	Type     string `mapstructure:"type"`
 	DiskType string `mapstructure:"disk_type"`
 
@@ -152,7 +151,9 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 		}
 	}
 
-	// TODO Disks
+	if len(c.Disks) < 1 || c.Disks[0].Type != "datavolume" {
+		errs = packer.MultiErrorAppend(errs, errors.New("there has to be at least one disk, this first disk has to be of type `datavolume`"))
+	}
 
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, nil, errs

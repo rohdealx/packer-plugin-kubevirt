@@ -79,7 +79,6 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 // FlatDiskConfig is an auto-generated flat version of DiskConfig.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatDiskConfig struct {
-	Name             *string           `mapstructure:"name" cty:"name" hcl:"name"`
 	Type             *string           `mapstructure:"type" cty:"type" hcl:"type"`
 	DiskType         *string           `mapstructure:"disk_type" cty:"disk_type" hcl:"disk_type"`
 	Image            *string           `mapstructure:"image" cty:"image" hcl:"image"`
@@ -104,7 +103,6 @@ func (*DiskConfig) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Sp
 // The decoded values from this spec will then be applied to a FlatDiskConfig.
 func (*FlatDiskConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"name":               &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
 		"type":               &hcldec.AttrSpec{Name: "type", Type: cty.String, Required: false},
 		"disk_type":          &hcldec.AttrSpec{Name: "disk_type", Type: cty.String, Required: false},
 		"image":              &hcldec.AttrSpec{Name: "image", Type: cty.String, Required: false},

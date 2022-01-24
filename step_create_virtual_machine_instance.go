@@ -96,12 +96,13 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 			DeviceName: gpu,
 		})
 	}
-	for _, d := range config.Disks {
+	for i, d := range config.Disks {
+		name := getDiskName(state, i)
 		disk := kubevirtv1.Disk{
-			Name: d.Name,
+			Name: name,
 		}
 		volume := kubevirtv1.Volume{
-			Name: d.Name,
+			Name: name,
 		}
 		if d.DiskType == "cdrom" {
 			disk.DiskDevice.CDRom = &kubevirtv1.CDRomTarget{
@@ -122,7 +123,7 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 			volume.VolumeSource = kubevirtv1.VolumeSource{
 				CloudInitConfigDrive: &kubevirtv1.CloudInitConfigDriveSource{
 					UserDataSecretRef: &corev1.LocalObjectReference{
-						Name: d.Name,
+						Name: name,
 					},
 				},
 			}
@@ -130,14 +131,14 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 			volume.VolumeSource = kubevirtv1.VolumeSource{
 				Sysprep: &kubevirtv1.SysprepSource{
 					Secret: &corev1.LocalObjectReference{
-						Name: d.Name,
+						Name: name,
 					},
 				},
 			}
 		} else if d.Type == "datavolume" {
 			volume.VolumeSource = kubevirtv1.VolumeSource{
 				DataVolume: &kubevirtv1.DataVolumeSource{
-					Name: d.Name,
+					Name: name,
 				},
 			}
 		}

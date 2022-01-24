@@ -16,7 +16,7 @@ import (
 
 type StepCreateDataVolume struct {
 	Namespace        string
-	Name             string
+	DiskNumber       int
 	Size             string
 	Preallocation    bool
 	VolumeMode       string
@@ -36,7 +36,6 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 	dv := &cdiv1.DataVolume{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: s.Namespace,
-			Name:      s.Name,
 		},
 		Spec: cdiv1.DataVolumeSpec{
 			Preallocation: &s.Preallocation,
@@ -49,6 +48,11 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 				},
 			},
 		},
+	}
+	if s.DiskNumber == 0 {
+		dv.ObjectMeta.Name = getDiskName(state, s.DiskNumber)
+	} else {
+		dv.ObjectMeta.GenerateName = "pkr-"
 	}
 	if s.VolumeMode != "" {
 		volumeMode := corev1.PersistentVolumeMode(s.VolumeMode)
@@ -82,8 +86,9 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 		state.Put("error", fmt.Errorf("can't create data volume: %s", err))
 		return multistep.ActionHalt
 	}
+	setDiskName(state, s.DiskNumber, dv.Name)
 	watchOptions := metav1.ListOptions{
-		FieldSelector: fmt.Sprintf("metadata.namespace=%s,metadata.name=%s", s.Namespace, s.Name),
+		FieldSelector: fmt.Sprintf("metadata.namespace=%s,metadata.name=%s", s.Namespace, dv.Name),
 	}
 	watch, err := cdiClient.DataVolumes(s.Namespace).Watch(ctx, watchOptions)
 	if err != nil {
@@ -123,10 +128,12 @@ func (s *StepCreateDataVolume) Cleanup(state multistep.StateBag) {
 	_, cancelled := state.GetOk(multistep.StateCancelled)
 	_, halted := state.GetOk(multistep.StateHalted)
 	if cancelled || halted {
+		// TODO if created
 		ui := state.Get("ui").(packer.Ui)
 		cdiClient := state.Get("cdi_client").(cdiclientv1beta1.CdiV1beta1Interface)
 		ui.Say("Deleting data volume.")
-		err := cdiClient.DataVolumes(s.Namespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
+		name := getDiskName(state, s.DiskNumber)
+		err := cdiClient.DataVolumes(s.Namespace).Delete(context.Background(), name, metav1.DeleteOptions{})
 		if err != nil {
 			ui.Error(fmt.Sprintf("Error deleting data volume: %s", err))
 			return

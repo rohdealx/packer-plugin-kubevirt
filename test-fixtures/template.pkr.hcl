@@ -17,7 +17,6 @@ source "kubevirt" "example" {
 
   disk {
     type        = "datavolume"
-    name        = "example"
     size        = "5Gi"
     source_type = "registry"
     source_url  = "docker://quay.io/kubevirt/fedora-cloud-container-disk-demo"
@@ -25,7 +24,6 @@ source "kubevirt" "example" {
 
   disk {
     type = "cloudinit"
-    name = "cloudinit"
     files = {
       userdata = local.user_data,
     }

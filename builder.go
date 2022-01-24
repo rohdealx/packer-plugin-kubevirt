@@ -64,12 +64,16 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	state.Put("virt_client", virtClient)
 	state.Put("cdi_client", cdiClient)
 
+	diskNames := make([]string, len(b.config.Disks))
+	diskNames[0] = b.config.Name
+	state.Put("disk_names", diskNames)
+
 	steps := []multistep.Step{}
-	for _, disk := range b.config.Disks {
+	for i, disk := range b.config.Disks {
 		if disk.Type == "datavolume" {
 			steps = append(steps, &StepCreateDataVolume{
 				Namespace:        b.config.Namespace,
-				Name:             disk.Name,
+				DiskNumber:       i,
 				Size:             disk.Size,
 				Preallocation:    disk.Preallocation,
 				VolumeMode:       disk.VolumeMode,
@@ -80,7 +84,7 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		} else if disk.Type == "cloudinit" || disk.Type == "sysprep" {
 			steps = append(steps, &StepCreateSecret{
 				Namespace:  b.config.Namespace,
-				Name:       disk.Name,
+				DiskNumber: i,
 				StringData: disk.Files,
 			})
 		}
@@ -112,4 +116,14 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		StateData: map[string]interface{}{"generated_data": state.Get("generated_data")},
 	}
 	return artifact, nil
+}
+
+func getDiskName(state multistep.StateBag, i int) string {
+	diskNames := state.Get("disk_names").([]string)
+	return diskNames[i]
+}
+
+func setDiskName(state multistep.StateBag, i int, name string) {
+	diskNames := state.Get("disk_names").([]string)
+	diskNames[i] = name
 }
