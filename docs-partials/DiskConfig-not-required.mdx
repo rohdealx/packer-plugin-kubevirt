@@ -1,23 +1,9 @@
 <!-- Code generated from the comments of the DiskConfig struct in config.go; DO NOT EDIT MANUALLY -->
 
-- `type` (string) - Type
+- `type` (string) - disk, cdrom
 
-- `disk_type` (string) - Disk Type
+- `boot_order` (uint) - value > 0, lower first
 
-- `image` (string) - container image
-
-- `size` (string) - data volume
-
-- `volume_mode` (string) - Volume Mode
-
-- `storage_class_name` (string) - Storage Class Name
-
-- `preallocation` (bool) - Preallocation
-
-- `source_type` (string) - data volume source
-
-- `source_url` (string) - Source URL
-
-- `files` (map[string]string) - cloud init and sysprep
+- `bus` (string) - virtio, sata, scsi
 
 <!-- End of code generated from the comments of the DiskConfig struct in config.go; -->

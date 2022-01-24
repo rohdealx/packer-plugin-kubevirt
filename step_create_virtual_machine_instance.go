@@ -6,7 +6,6 @@ import (
 
 	"github.com/hashicorp/packer-plugin-sdk/multistep"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
-	corev1 "k8s.io/api/core/v1"
 	k8sv1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -96,15 +95,16 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 			DeviceName: gpu,
 		})
 	}
-	for i, d := range config.Disks {
-		name := getDiskName(state, i)
+	for _, d := range config.disks {
+		name := d.GetName()
 		disk := kubevirtv1.Disk{
 			Name: name,
 		}
-		volume := kubevirtv1.Volume{
-			Name: name,
+		bootOrder := d.GetDiskConfig().BootOrder
+		if bootOrder > 0 {
+			disk.BootOrder = &bootOrder
 		}
-		if d.DiskType == "cdrom" {
+		if d.GetDiskConfig().Type == "cdrom" {
 			disk.DiskDevice.CDRom = &kubevirtv1.CDRomTarget{
 				Bus: "sata",
 			}
@@ -113,36 +113,9 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 				Bus: "virtio",
 			}
 		}
-		if d.Type == "containerdisk" {
-			volume.VolumeSource = kubevirtv1.VolumeSource{
-				ContainerDisk: &kubevirtv1.ContainerDiskSource{
-					Image: d.Image,
-				},
-			}
-		} else if d.Type == "cloudinit" {
-			volume.VolumeSource = kubevirtv1.VolumeSource{
-				CloudInitConfigDrive: &kubevirtv1.CloudInitConfigDriveSource{
-					UserDataSecretRef: &corev1.LocalObjectReference{
-						Name: name,
-					},
-				},
-			}
-		} else if d.Type == "sysprep" {
-			volume.VolumeSource = kubevirtv1.VolumeSource{
-				Sysprep: &kubevirtv1.SysprepSource{
-					Secret: &corev1.LocalObjectReference{
-						Name: name,
-					},
-				},
-			}
-		} else if d.Type == "datavolume" {
-			volume.VolumeSource = kubevirtv1.VolumeSource{
-				DataVolume: &kubevirtv1.DataVolumeSource{
-					Name: name,
-				},
-			}
-		}
 		vmi.Spec.Domain.Devices.Disks = append(vmi.Spec.Domain.Devices.Disks, disk)
+
+		volume, _ := d.GetVolume(state)
 		vmi.Spec.Volumes = append(vmi.Spec.Volumes, volume)
 	}
 
@@ -152,7 +125,7 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 		state.Put("error", err)
 		return multistep.ActionHalt
 	}
-	state.Put("virtual_machine_instance_name", vmi.Name)
+	state.Put(VirtualMachineInstanceName, vmi.Name)
 	ui.Say(fmt.Sprintf("Created virutal machine instance %s.", vmi.Name))
 	return multistep.ActionContinue
 }

@@ -2,6 +2,8 @@
 
 - `kube_config_path` (string) - Path to the kubeconfig file. Can also be set via the `KUBECONFIG` environment variable.
 
+- `namespace` (string) - Namespace
+
 - `ssh_port` (int) - The port to connect to ssh. This defaults to `22`.
 
 - `ssh_timeout` (duration string | ex: "1h5m2s") - The time to wait for ssh to become available. Packer uses this to
@@ -26,11 +28,12 @@
 
 - `gpus` ([]string) - List of gpus device names e.g. `nvidia.com/TU104GL_Tesla_T4`.
 
-- `namespace` (string) - Namespace
+- `data_volume` ([]DataVolumeConfig) - Data Volumes
 
-- `name` (string) - Name
+- `container_disk` ([]ContainerDiskConfig) - Container Disks
 
-- `disk` ([]DiskConfig) - There has to be at least one disk,
-  this first disk has to be of type `datavolume` and is the resulting artifact.
+- `cloud_init` ([]CloudInitConfig) - Cloud Inits
+
+- `sysprep` ([]SysprepConfig) - Syspreps
 
 <!-- End of code generated from the comments of the Config struct in config.go; -->

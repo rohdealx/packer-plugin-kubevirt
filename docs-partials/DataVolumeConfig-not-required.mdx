@@ -1,13 +1,19 @@
 <!-- Code generated from the comments of the DataVolumeConfig struct in config.go; DO NOT EDIT MANUALLY -->
 
-- `size` (string) - Size
+- `disk` (DiskConfig) - Disk
 
-- `volume_mode` (string) - Volume Mode
+- `name` (string) - if name is set export this data volume as an artifact and don't delete it
+
+- `preallocation` (bool) - Whether this data volume should be preallocated.
+
+- `source_type` (string) - data volume source
+
+- `source_url` (string) - Source URL
+
+- `volume_mode` (string) - persistent volume claim
 
 - `storage_class_name` (string) - Storage Class Name
 
-- `preallocation` (bool) - Preallocation
-
-- `source` (DataVolumeSourceConfig) - Source
+- `size` (string) - Size
 
 <!-- End of code generated from the comments of the DataVolumeConfig struct in config.go; -->

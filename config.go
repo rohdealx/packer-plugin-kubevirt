@@ -1,12 +1,16 @@
 //go:generate packer-sdc struct-markdown
-//go:generate packer-sdc mapstructure-to-hcl2 -type Config,DiskConfig
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config,DiskConfig,DataVolumeConfig,ContainerDiskConfig,CloudInitConfig,SysprepConfig
 
 package main
 
 import (
 	"errors"
 	"os"
+
 	"time"
+
+	"github.com/hashicorp/packer-plugin-sdk/multistep"
+	kubevirtv1 "kubevirt.io/api/core/v1"
 
 	"github.com/hashicorp/packer-plugin-sdk/common"
 	"github.com/hashicorp/packer-plugin-sdk/packer"
@@ -15,13 +19,12 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-const BuilderId = "rohdealx.kubevirt"
-
 type Config struct {
 	common.PackerConfig `mapstructure:",squash"`
 
 	// Path to the kubeconfig file. Can also be set via the `KUBECONFIG` environment variable.
 	KubeConfigPath string `mapstructure:"kube_config_path"`
+	Namespace      string `mapstructure:"namespace"`
 
 	// The port to connect to ssh. This defaults to `22`.
 	SSHPort int `mapstructure:"ssh_port"`
@@ -54,35 +57,65 @@ type Config struct {
 	// List of gpus device names e.g. `nvidia.com/TU104GL_Tesla_T4`.
 	GPUs []string `mapstructure:"gpus"`
 
-	Namespace string `mapstructure:"namespace"`
-	Name      string `mapstructure:"name"`
+	DataVolumes    []DataVolumeConfig    `mapstructure:"data_volume"`
+	ContainerDisks []ContainerDiskConfig `mapstructure:"container_disk"`
+	CloudInits     []CloudInitConfig     `mapstructure:"cloud_init"`
+	Syspreps       []SysprepConfig       `mapstructure:"sysprep"`
 
-	// There has to be at least one disk,
-	// this first disk has to be of type `datavolume` and is the resulting artifact.
-	Disks []DiskConfig `mapstructure:"disk"`
+	// Runtime
+	disks []Disk
 
 	ctx interpolate.Context
 }
 
-type DiskConfig struct {
-	Type     string `mapstructure:"type"`
-	DiskType string `mapstructure:"disk_type"`
+type DataVolumeConfig struct {
+	Disk DiskConfig `mapstructure:"disk" required:"false"`
 
-	// container image
-	Image string `mapstructure:"image"`
-
-	// data volume
-	Size             string `mapstructure:"size"`
-	VolumeMode       string `mapstructure:"volume_mode"`
-	StorageClassName string `mapstructure:"storage_class_name"`
-	Preallocation    bool   `mapstructure:"preallocation"`
+	// if name is set export this data volume as an artifact and don't delete it
+	Name string `mapstructure:"name" required:"false"`
+	// Whether this data volume should be preallocated.
+	Preallocation bool `mapstructure:"preallocation" required:"false"`
 
 	// data volume source
 	SourceType string `mapstructure:"source_type"`
 	SourceURL  string `mapstructure:"source_url"`
 
-	// cloud init and sysprep
-	Files map[string]string `mapstructure:"files"`
+	// persistent volume claim
+	VolumeMode       string `mapstructure:"volume_mode" required:"false"`
+	StorageClassName string `mapstructure:"storage_class_name" required:"false"`
+	Size             string `mapstructure:"size"`
+
+	id int
+}
+
+type ContainerDiskConfig struct {
+	Disk  DiskConfig `mapstructure:"disk" required:"false"`
+	Image string     `mapstructure:"image" required:"true"`
+
+	id int
+}
+
+type CloudInitConfig struct {
+	Disk  DiskConfig        `mapstructure:"disk" required:"false"`
+	Files map[string]string `mapstructure:"files" required:"true"`
+
+	id int
+}
+
+type SysprepConfig struct {
+	Disk  DiskConfig        `mapstructure:"disk" required:"false"`
+	Files map[string]string `mapstructure:"files" required:"true"`
+
+	id int
+}
+
+type DiskConfig struct {
+	// disk, cdrom
+	Type string `mapstructure:"type" required:"false"`
+	// value > 0, lower first
+	BootOrder uint `mapstructure:"boot_order" required:"false"`
+	// virtio, sata, scsi
+	Bus string `mapstructure:"bus" required:"false"`
 }
 
 func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
@@ -94,6 +127,7 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 	if err != nil {
 		return nil, nil, err
 	}
+
 	var errs *packer.MultiError
 	packer.LogSecretFilter.Set(c.SSHPassword)
 
@@ -126,9 +160,6 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 	if c.Namespace == "" {
 		c.Namespace = "default"
 	}
-	if c.Name == "" {
-		errs = packer.MultiErrorAppend(errs, errors.New("name must be specified"))
-	}
 
 	if c.SecureBoot {
 		c.EFI = true
@@ -151,12 +182,31 @@ func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {
 		}
 	}
 
-	if len(c.Disks) < 1 || c.Disks[0].Type != "datavolume" {
-		errs = packer.MultiErrorAppend(errs, errors.New("there has to be at least one disk, this first disk has to be of type `datavolume`"))
+	for i, e := range c.DataVolumes {
+		e.id = i
+		c.disks = append(c.disks, e)
+	}
+	for i, e := range c.CloudInits {
+		e.id = i
+		c.disks = append(c.disks, e)
+	}
+	for i, e := range c.Syspreps {
+		e.id = i
+		c.disks = append(c.disks, e)
+	}
+	for i, e := range c.ContainerDisks {
+		e.id = i
+		c.disks = append(c.disks, e)
 	}
 
 	if errs != nil && len(errs.Errors) > 0 {
 		return nil, nil, errs
 	}
 	return nil, nil, nil
+}
+
+type Disk interface {
+	GetName() string
+	GetVolume(multistep.StateBag) (kubevirtv1.Volume, error)
+	GetDiskConfig() DiskConfig
 }

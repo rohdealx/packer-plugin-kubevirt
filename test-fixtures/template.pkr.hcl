@@ -10,23 +10,26 @@ EOF
 }
 
 source "kubevirt" "example" {
-  name = "example"
-
   ssh_username = "fedora"
   ssh_password = "fedora"
 
-  disk {
-    type        = "datavolume"
-    size        = "5Gi"
-    source_type = "registry"
-    source_url  = "docker://quay.io/kubevirt/fedora-cloud-container-disk-demo"
+  container_disk {
+    image = "quay.io/kubevirt/fedora-cloud-container-disk-demo:v0.36.5"
+    disk {
+      boot_order = 1
+    }
   }
 
-  disk {
-    type = "cloudinit"
+  cloud_init {
     files = {
       userdata = local.user_data,
     }
+  }
+
+  data_volume {
+    name        = "example"
+    size        = "5Gi"
+    source_type = "blank"
   }
 }
 
@@ -40,8 +43,10 @@ build {
   }
 
   provisioner "shell" {
+    expect_disconnect = true
+    skip_clean        = true
     inline = [
-      "sudo shutdown -h 1",
+      "sudo shutdown -h now",
     ]
   }
 }
