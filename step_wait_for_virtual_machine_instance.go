@@ -18,8 +18,9 @@ func (s *StepWaitForVirtualMachineInstance) Run(ctx context.Context, state multi
 	ui := state.Get("ui").(packer.Ui)
 	virtClient := state.Get("virt_client").(kubecli.KubevirtClient)
 	config := state.Get("config").(*Config)
+	name := state.Get("virtual_machine_instance_name").(string)
 	watchOptions := metav1.ListOptions{
-		FieldSelector: fmt.Sprintf("metadata.namespace=%s,metadata.name=%s", config.Namespace, config.Name),
+		FieldSelector: fmt.Sprintf("metadata.namespace=%s,metadata.name=%s", config.Namespace, name),
 	}
 	watch, err := virtClient.VirtualMachineInstance(config.Namespace).Watch(watchOptions)
 	if err != nil {

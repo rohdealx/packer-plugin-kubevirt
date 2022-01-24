@@ -1,5 +1,5 @@
 //go:generate packer-sdc struct-markdown
-//go:generate packer-sdc mapstructure-to-hcl2 -type Config,DataVolumeConfig,DataVolumeSourceConfig,DiskConfig
+//go:generate packer-sdc mapstructure-to-hcl2 -type Config,DiskConfig
 
 package main
 
@@ -40,10 +40,6 @@ type Config struct {
 	// The plaintext password used to authenticate.
 	SSHPassword string `mapstructure:"ssh_password" required:"true"`
 
-	Namespace  string           `mapstructure:"namespace"`
-	Name       string           `mapstructure:"name"`
-	DataVolume DataVolumeConfig `mapstructure:"data_volume"`
-
 	// If `true`, efi will be used instead of bios.
 	EFI bool `mapstructure:"efi"`
 	// Implies [`efi`](#efi) `true`.
@@ -58,6 +54,9 @@ type Config struct {
 	// List of gpus device names e.g. `nvidia.com/TU104GL_Tesla_T4`.
 	GPUs []string `mapstructure:"gpus"`
 
+	Namespace string `mapstructure:"namespace"`
+	Name      string `mapstructure:"name"`
+
 	// There has to be at least one disk,
 	// this first disk has to be of type `datavolume` and is the resulting artifact.
 	Disks []DiskConfig `mapstructure:"disk"`
@@ -65,25 +64,26 @@ type Config struct {
 	ctx interpolate.Context
 }
 
-type DataVolumeConfig struct {
-	Size             string                 `mapstructure:"size"`
-	VolumeMode       string                 `mapstructure:"volume_mode"`
-	StorageClassName string                 `mapstructure:"storage_class_name"`
-	Preallocation    bool                   `mapstructure:"preallocation"`
-	Source           DataVolumeSourceConfig `mapstructure:"source"`
-}
-
-type DataVolumeSourceConfig struct {
-	Type string `mapstructure:"type"`
-	URL  string `mapstructure:"url"`
-}
-
 type DiskConfig struct {
-	Name     string            `mapstructure:"name"`
-	Type     string            `mapstructure:"type"`
-	DiskType string            `mapstructure:"disk_type"`
-	Image    string            `mapstructure:"image"`
-	Files    map[string]string `mapstructure:"files"`
+	Name     string `mapstructure:"name"`
+	Type     string `mapstructure:"type"`
+	DiskType string `mapstructure:"disk_type"`
+
+	// container image
+	Image string `mapstructure:"image"`
+
+	// data volume
+	Size             string `mapstructure:"size"`
+	VolumeMode       string `mapstructure:"volume_mode"`
+	StorageClassName string `mapstructure:"storage_class_name"`
+	Preallocation    bool   `mapstructure:"preallocation"`
+
+	// data volume source
+	SourceType string `mapstructure:"source_type"`
+	SourceURL  string `mapstructure:"source_url"`
+
+	// cloud init and sysprep
+	Files map[string]string `mapstructure:"files"`
 }
 
 func (c *Config) Prepare(raws ...interface{}) ([]string, []string, error) {

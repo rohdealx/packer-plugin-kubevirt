@@ -14,12 +14,6 @@
 - `ssh_handshake_attempts` (int) - The number of handshakes to attempt with ssh once it can connect. This
   defaults to `10`.
 
-- `namespace` (string) - Namespace
-
-- `name` (string) - Name
-
-- `data_volume` (DataVolumeConfig) - Data Volume
-
 - `efi` (bool) - If `true`, efi will be used instead of bios.
 
 - `secure_boot` (bool) - Implies [`efi`](#efi) `true`.
@@ -31,6 +25,10 @@
 - `hugepages_page_size` (string) - The hugepage size, for x86_64 architecture valid values are 1Gi and 2Mi.
 
 - `gpus` ([]string) - List of gpus device names e.g. `nvidia.com/TU104GL_Tesla_T4`.
+
+- `namespace` (string) - Namespace
+
+- `name` (string) - Name
 
 - `disk` ([]DiskConfig) - There has to be at least one disk,
   this first disk has to be of type `datavolume` and is the resulting artifact.

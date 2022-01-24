@@ -64,6 +64,7 @@ func (s *StepConnectSSH) Cleanup(multistep.StateBag) {}
 func (s *StepConnectSSH) waitForSSH(ctx context.Context, state multistep.StateBag) (packer.Communicator, error) {
 	config := state.Get("config").(*Config)
 	virtClient := state.Get("virt_client").(kubecli.KubevirtClient)
+	name := state.Get("virtual_machine_instance_name").(string)
 
 	var comm packer.Communicator
 	handshakeAttempts := 0
@@ -79,11 +80,11 @@ func (s *StepConnectSSH) waitForSSH(ctx context.Context, state multistep.StateBa
 			}
 		}
 
-		addr := fmt.Sprintf("vmi/%s.%s:%d", config.Name, config.Namespace, config.SSHPort)
+		addr := fmt.Sprintf("vmi/%s.%s:%d", name, config.Namespace, config.SSHPort)
 		connFunc := func() (net.Conn, error) {
-			stream, err := virtClient.VirtualMachineInstance(config.Namespace).PortForward(config.Name, config.SSHPort, "tcp")
+			stream, err := virtClient.VirtualMachineInstance(config.Namespace).PortForward(name, config.SSHPort, "tcp")
 			if err != nil {
-				return nil, fmt.Errorf("can't access vmi %s %s: %w", config.Namespace, config.Name, err)
+				return nil, fmt.Errorf("can't access vmi %s %s: %w", config.Namespace, name, err)
 			}
 			return stream.AsConn(), nil
 		}

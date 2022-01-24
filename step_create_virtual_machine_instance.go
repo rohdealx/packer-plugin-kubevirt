@@ -17,6 +17,7 @@ import (
 type StepCreateVirtualMachineInstance struct{}
 
 func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multistep.StateBag) multistep.StepAction {
+	ui := state.Get("ui").(packer.Ui)
 	virtClient := state.Get("virt_client").(kubecli.KubevirtClient)
 	config := state.Get("config").(*Config)
 
@@ -29,8 +30,8 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 
 	vmi := &kubevirtv1.VirtualMachineInstance{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: config.Namespace,
-			Name:      config.Name,
+			Namespace:    config.Namespace,
+			GenerateName: "pkr-",
 		},
 		Spec: kubevirtv1.VirtualMachineInstanceSpec{
 			TerminationGracePeriodSeconds: &terminationGracePeriodSeconds,
@@ -151,6 +152,7 @@ func (s *StepCreateVirtualMachineInstance) Run(_ context.Context, state multiste
 		return multistep.ActionHalt
 	}
 	state.Put("virtual_machine_instance_name", vmi.Name)
+	ui.Say(fmt.Sprintf("Created virutal machine instance %s.", vmi.Name))
 	return multistep.ActionContinue
 }
 
@@ -162,7 +164,7 @@ func (s *StepCreateVirtualMachineInstance) Cleanup(state multistep.StateBag) {
 		name := name.(string)
 		err := virtClient.VirtualMachineInstance(config.Namespace).Delete(name, &metav1.DeleteOptions{})
 		if err != nil {
-			ui.Error(fmt.Sprintf("Error deleting virtual machine instance. Please delete it manually.\n\nNamespace: %s\nName: %s\nError: %s", config.Namespace, config.Name, err))
+			ui.Error(fmt.Sprintf("Error deleting virtual machine instance. Please delete it manually.\n\nNamespace: %s\nName: %s\nError: %s", config.Namespace, name, err))
 			return
 		}
 		ui.Say("Virtual machine instance deleted.")

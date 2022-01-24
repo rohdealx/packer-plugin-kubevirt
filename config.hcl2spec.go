@@ -10,31 +10,30 @@ import (
 // FlatConfig is an auto-generated flat version of Config.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatConfig struct {
-	PackerBuildName      *string               `mapstructure:"packer_build_name" cty:"packer_build_name" hcl:"packer_build_name"`
-	PackerBuilderType    *string               `mapstructure:"packer_builder_type" cty:"packer_builder_type" hcl:"packer_builder_type"`
-	PackerCoreVersion    *string               `mapstructure:"packer_core_version" cty:"packer_core_version" hcl:"packer_core_version"`
-	PackerDebug          *bool                 `mapstructure:"packer_debug" cty:"packer_debug" hcl:"packer_debug"`
-	PackerForce          *bool                 `mapstructure:"packer_force" cty:"packer_force" hcl:"packer_force"`
-	PackerOnError        *string               `mapstructure:"packer_on_error" cty:"packer_on_error" hcl:"packer_on_error"`
-	PackerUserVars       map[string]string     `mapstructure:"packer_user_variables" cty:"packer_user_variables" hcl:"packer_user_variables"`
-	PackerSensitiveVars  []string              `mapstructure:"packer_sensitive_variables" cty:"packer_sensitive_variables" hcl:"packer_sensitive_variables"`
-	KubeConfigPath       *string               `mapstructure:"kube_config_path" cty:"kube_config_path" hcl:"kube_config_path"`
-	SSHPort              *int                  `mapstructure:"ssh_port" cty:"ssh_port" hcl:"ssh_port"`
-	SSHTimeout           *string               `mapstructure:"ssh_timeout" cty:"ssh_timeout" hcl:"ssh_timeout"`
-	SSHKeepAliveInterval *string               `mapstructure:"ssh_keep_alive_interval" cty:"ssh_keep_alive_interval" hcl:"ssh_keep_alive_interval"`
-	SSHHandshakeAttempts *int                  `mapstructure:"ssh_handshake_attempts" cty:"ssh_handshake_attempts" hcl:"ssh_handshake_attempts"`
-	SSHUsername          *string               `mapstructure:"ssh_username" required:"true" cty:"ssh_username" hcl:"ssh_username"`
-	SSHPassword          *string               `mapstructure:"ssh_password" required:"true" cty:"ssh_password" hcl:"ssh_password"`
-	Namespace            *string               `mapstructure:"namespace" cty:"namespace" hcl:"namespace"`
-	Name                 *string               `mapstructure:"name" cty:"name" hcl:"name"`
-	DataVolume           *FlatDataVolumeConfig `mapstructure:"data_volume" cty:"data_volume" hcl:"data_volume"`
-	EFI                  *bool                 `mapstructure:"efi" cty:"efi" hcl:"efi"`
-	SecureBoot           *bool                 `mapstructure:"secure_boot" cty:"secure_boot" hcl:"secure_boot"`
-	CPU                  *string               `mapstructure:"cpu" cty:"cpu" hcl:"cpu"`
-	Memory               *string               `mapstructure:"memory" cty:"memory" hcl:"memory"`
-	HugepagesPageSize    *string               `mapstructure:"hugepages_page_size" required:"false" cty:"hugepages_page_size" hcl:"hugepages_page_size"`
-	GPUs                 []string              `mapstructure:"gpus" cty:"gpus" hcl:"gpus"`
-	Disks                []FlatDiskConfig      `mapstructure:"disk" cty:"disk" hcl:"disk"`
+	PackerBuildName      *string           `mapstructure:"packer_build_name" cty:"packer_build_name" hcl:"packer_build_name"`
+	PackerBuilderType    *string           `mapstructure:"packer_builder_type" cty:"packer_builder_type" hcl:"packer_builder_type"`
+	PackerCoreVersion    *string           `mapstructure:"packer_core_version" cty:"packer_core_version" hcl:"packer_core_version"`
+	PackerDebug          *bool             `mapstructure:"packer_debug" cty:"packer_debug" hcl:"packer_debug"`
+	PackerForce          *bool             `mapstructure:"packer_force" cty:"packer_force" hcl:"packer_force"`
+	PackerOnError        *string           `mapstructure:"packer_on_error" cty:"packer_on_error" hcl:"packer_on_error"`
+	PackerUserVars       map[string]string `mapstructure:"packer_user_variables" cty:"packer_user_variables" hcl:"packer_user_variables"`
+	PackerSensitiveVars  []string          `mapstructure:"packer_sensitive_variables" cty:"packer_sensitive_variables" hcl:"packer_sensitive_variables"`
+	KubeConfigPath       *string           `mapstructure:"kube_config_path" cty:"kube_config_path" hcl:"kube_config_path"`
+	SSHPort              *int              `mapstructure:"ssh_port" cty:"ssh_port" hcl:"ssh_port"`
+	SSHTimeout           *string           `mapstructure:"ssh_timeout" cty:"ssh_timeout" hcl:"ssh_timeout"`
+	SSHKeepAliveInterval *string           `mapstructure:"ssh_keep_alive_interval" cty:"ssh_keep_alive_interval" hcl:"ssh_keep_alive_interval"`
+	SSHHandshakeAttempts *int              `mapstructure:"ssh_handshake_attempts" cty:"ssh_handshake_attempts" hcl:"ssh_handshake_attempts"`
+	SSHUsername          *string           `mapstructure:"ssh_username" required:"true" cty:"ssh_username" hcl:"ssh_username"`
+	SSHPassword          *string           `mapstructure:"ssh_password" required:"true" cty:"ssh_password" hcl:"ssh_password"`
+	EFI                  *bool             `mapstructure:"efi" cty:"efi" hcl:"efi"`
+	SecureBoot           *bool             `mapstructure:"secure_boot" cty:"secure_boot" hcl:"secure_boot"`
+	CPU                  *string           `mapstructure:"cpu" cty:"cpu" hcl:"cpu"`
+	Memory               *string           `mapstructure:"memory" cty:"memory" hcl:"memory"`
+	HugepagesPageSize    *string           `mapstructure:"hugepages_page_size" required:"false" cty:"hugepages_page_size" hcl:"hugepages_page_size"`
+	GPUs                 []string          `mapstructure:"gpus" cty:"gpus" hcl:"gpus"`
+	Namespace            *string           `mapstructure:"namespace" cty:"namespace" hcl:"namespace"`
+	Name                 *string           `mapstructure:"name" cty:"name" hcl:"name"`
+	Disks                []FlatDiskConfig  `mapstructure:"disk" cty:"disk" hcl:"disk"`
 }
 
 // FlatMapstructure returns a new FlatConfig.
@@ -64,72 +63,15 @@ func (*FlatConfig) HCL2Spec() map[string]hcldec.Spec {
 		"ssh_handshake_attempts":     &hcldec.AttrSpec{Name: "ssh_handshake_attempts", Type: cty.Number, Required: false},
 		"ssh_username":               &hcldec.AttrSpec{Name: "ssh_username", Type: cty.String, Required: false},
 		"ssh_password":               &hcldec.AttrSpec{Name: "ssh_password", Type: cty.String, Required: false},
-		"namespace":                  &hcldec.AttrSpec{Name: "namespace", Type: cty.String, Required: false},
-		"name":                       &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
-		"data_volume":                &hcldec.BlockSpec{TypeName: "data_volume", Nested: hcldec.ObjectSpec((*FlatDataVolumeConfig)(nil).HCL2Spec())},
 		"efi":                        &hcldec.AttrSpec{Name: "efi", Type: cty.Bool, Required: false},
 		"secure_boot":                &hcldec.AttrSpec{Name: "secure_boot", Type: cty.Bool, Required: false},
 		"cpu":                        &hcldec.AttrSpec{Name: "cpu", Type: cty.String, Required: false},
 		"memory":                     &hcldec.AttrSpec{Name: "memory", Type: cty.String, Required: false},
 		"hugepages_page_size":        &hcldec.AttrSpec{Name: "hugepages_page_size", Type: cty.String, Required: false},
 		"gpus":                       &hcldec.AttrSpec{Name: "gpus", Type: cty.List(cty.String), Required: false},
+		"namespace":                  &hcldec.AttrSpec{Name: "namespace", Type: cty.String, Required: false},
+		"name":                       &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
 		"disk":                       &hcldec.BlockListSpec{TypeName: "disk", Nested: hcldec.ObjectSpec((*FlatDiskConfig)(nil).HCL2Spec())},
-	}
-	return s
-}
-
-// FlatDataVolumeConfig is an auto-generated flat version of DataVolumeConfig.
-// Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
-type FlatDataVolumeConfig struct {
-	Size             *string                     `mapstructure:"size" cty:"size" hcl:"size"`
-	VolumeMode       *string                     `mapstructure:"volume_mode" cty:"volume_mode" hcl:"volume_mode"`
-	StorageClassName *string                     `mapstructure:"storage_class_name" cty:"storage_class_name" hcl:"storage_class_name"`
-	Preallocation    *bool                       `mapstructure:"preallocation" cty:"preallocation" hcl:"preallocation"`
-	Source           *FlatDataVolumeSourceConfig `mapstructure:"source" cty:"source" hcl:"source"`
-}
-
-// FlatMapstructure returns a new FlatDataVolumeConfig.
-// FlatDataVolumeConfig is an auto-generated flat version of DataVolumeConfig.
-// Where the contents a fields with a `mapstructure:,squash` tag are bubbled up.
-func (*DataVolumeConfig) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec } {
-	return new(FlatDataVolumeConfig)
-}
-
-// HCL2Spec returns the hcl spec of a DataVolumeConfig.
-// This spec is used by HCL to read the fields of DataVolumeConfig.
-// The decoded values from this spec will then be applied to a FlatDataVolumeConfig.
-func (*FlatDataVolumeConfig) HCL2Spec() map[string]hcldec.Spec {
-	s := map[string]hcldec.Spec{
-		"size":               &hcldec.AttrSpec{Name: "size", Type: cty.String, Required: false},
-		"volume_mode":        &hcldec.AttrSpec{Name: "volume_mode", Type: cty.String, Required: false},
-		"storage_class_name": &hcldec.AttrSpec{Name: "storage_class_name", Type: cty.String, Required: false},
-		"preallocation":      &hcldec.AttrSpec{Name: "preallocation", Type: cty.Bool, Required: false},
-		"source":             &hcldec.BlockSpec{TypeName: "source", Nested: hcldec.ObjectSpec((*FlatDataVolumeSourceConfig)(nil).HCL2Spec())},
-	}
-	return s
-}
-
-// FlatDataVolumeSourceConfig is an auto-generated flat version of DataVolumeSourceConfig.
-// Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
-type FlatDataVolumeSourceConfig struct {
-	Type *string `mapstructure:"type" cty:"type" hcl:"type"`
-	URL  *string `mapstructure:"url" cty:"url" hcl:"url"`
-}
-
-// FlatMapstructure returns a new FlatDataVolumeSourceConfig.
-// FlatDataVolumeSourceConfig is an auto-generated flat version of DataVolumeSourceConfig.
-// Where the contents a fields with a `mapstructure:,squash` tag are bubbled up.
-func (*DataVolumeSourceConfig) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Spec } {
-	return new(FlatDataVolumeSourceConfig)
-}
-
-// HCL2Spec returns the hcl spec of a DataVolumeSourceConfig.
-// This spec is used by HCL to read the fields of DataVolumeSourceConfig.
-// The decoded values from this spec will then be applied to a FlatDataVolumeSourceConfig.
-func (*FlatDataVolumeSourceConfig) HCL2Spec() map[string]hcldec.Spec {
-	s := map[string]hcldec.Spec{
-		"type": &hcldec.AttrSpec{Name: "type", Type: cty.String, Required: false},
-		"url":  &hcldec.AttrSpec{Name: "url", Type: cty.String, Required: false},
 	}
 	return s
 }
@@ -137,11 +79,17 @@ func (*FlatDataVolumeSourceConfig) HCL2Spec() map[string]hcldec.Spec {
 // FlatDiskConfig is an auto-generated flat version of DiskConfig.
 // Where the contents of a field with a `mapstructure:,squash` tag are bubbled up.
 type FlatDiskConfig struct {
-	Name     *string           `mapstructure:"name" cty:"name" hcl:"name"`
-	Type     *string           `mapstructure:"type" cty:"type" hcl:"type"`
-	DiskType *string           `mapstructure:"disk_type" cty:"disk_type" hcl:"disk_type"`
-	Image    *string           `mapstructure:"image" cty:"image" hcl:"image"`
-	Files    map[string]string `mapstructure:"files" cty:"files" hcl:"files"`
+	Name             *string           `mapstructure:"name" cty:"name" hcl:"name"`
+	Type             *string           `mapstructure:"type" cty:"type" hcl:"type"`
+	DiskType         *string           `mapstructure:"disk_type" cty:"disk_type" hcl:"disk_type"`
+	Image            *string           `mapstructure:"image" cty:"image" hcl:"image"`
+	Size             *string           `mapstructure:"size" cty:"size" hcl:"size"`
+	VolumeMode       *string           `mapstructure:"volume_mode" cty:"volume_mode" hcl:"volume_mode"`
+	StorageClassName *string           `mapstructure:"storage_class_name" cty:"storage_class_name" hcl:"storage_class_name"`
+	Preallocation    *bool             `mapstructure:"preallocation" cty:"preallocation" hcl:"preallocation"`
+	SourceType       *string           `mapstructure:"source_type" cty:"source_type" hcl:"source_type"`
+	SourceURL        *string           `mapstructure:"source_url" cty:"source_url" hcl:"source_url"`
+	Files            map[string]string `mapstructure:"files" cty:"files" hcl:"files"`
 }
 
 // FlatMapstructure returns a new FlatDiskConfig.
@@ -156,11 +104,17 @@ func (*DiskConfig) FlatMapstructure() interface{ HCL2Spec() map[string]hcldec.Sp
 // The decoded values from this spec will then be applied to a FlatDiskConfig.
 func (*FlatDiskConfig) HCL2Spec() map[string]hcldec.Spec {
 	s := map[string]hcldec.Spec{
-		"name":      &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
-		"type":      &hcldec.AttrSpec{Name: "type", Type: cty.String, Required: false},
-		"disk_type": &hcldec.AttrSpec{Name: "disk_type", Type: cty.String, Required: false},
-		"image":     &hcldec.AttrSpec{Name: "image", Type: cty.String, Required: false},
-		"files":     &hcldec.AttrSpec{Name: "files", Type: cty.Map(cty.String), Required: false},
+		"name":               &hcldec.AttrSpec{Name: "name", Type: cty.String, Required: false},
+		"type":               &hcldec.AttrSpec{Name: "type", Type: cty.String, Required: false},
+		"disk_type":          &hcldec.AttrSpec{Name: "disk_type", Type: cty.String, Required: false},
+		"image":              &hcldec.AttrSpec{Name: "image", Type: cty.String, Required: false},
+		"size":               &hcldec.AttrSpec{Name: "size", Type: cty.String, Required: false},
+		"volume_mode":        &hcldec.AttrSpec{Name: "volume_mode", Type: cty.String, Required: false},
+		"storage_class_name": &hcldec.AttrSpec{Name: "storage_class_name", Type: cty.String, Required: false},
+		"preallocation":      &hcldec.AttrSpec{Name: "preallocation", Type: cty.Bool, Required: false},
+		"source_type":        &hcldec.AttrSpec{Name: "source_type", Type: cty.String, Required: false},
+		"source_url":         &hcldec.AttrSpec{Name: "source_url", Type: cty.String, Required: false},
+		"files":              &hcldec.AttrSpec{Name: "files", Type: cty.Map(cty.String), Required: false},
 	}
 	return s
 }

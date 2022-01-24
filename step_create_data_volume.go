@@ -15,15 +15,20 @@ import (
 )
 
 type StepCreateDataVolume struct {
-	Namespace string
-	Name      string
-	Config    DataVolumeConfig
+	Namespace        string
+	Name             string
+	Size             string
+	Preallocation    bool
+	VolumeMode       string
+	StorageClassName string
+	SourceType       string
+	SourceURL        string
 }
 
 func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag) multistep.StepAction {
 	ui := state.Get("ui").(packer.Ui)
 	cdiClient := state.Get("cdi_client").(cdiclientv1beta1.CdiV1beta1Interface)
-	storage, err := resource.ParseQuantity(s.Config.Size)
+	storage, err := resource.ParseQuantity(s.Size)
 	if err != nil {
 		state.Put("error", fmt.Errorf("invalid data volume size: %s", err))
 		return multistep.ActionHalt
@@ -34,7 +39,7 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 			Name:      s.Name,
 		},
 		Spec: cdiv1.DataVolumeSpec{
-			Preallocation: &s.Config.Preallocation,
+			Preallocation: &s.Preallocation,
 			PVC: &corev1.PersistentVolumeClaimSpec{
 				AccessModes: []corev1.PersistentVolumeAccessMode{corev1.ReadWriteOnce},
 				Resources: corev1.ResourceRequirements{
@@ -45,31 +50,31 @@ func (s *StepCreateDataVolume) Run(ctx context.Context, state multistep.StateBag
 			},
 		},
 	}
-	if s.Config.VolumeMode != "" {
-		volumeMode := corev1.PersistentVolumeMode(s.Config.VolumeMode)
+	if s.VolumeMode != "" {
+		volumeMode := corev1.PersistentVolumeMode(s.VolumeMode)
 		dv.Spec.PVC.VolumeMode = &volumeMode
 	}
-	if s.Config.StorageClassName != "" {
-		dv.Spec.PVC.StorageClassName = &s.Config.StorageClassName
+	if s.StorageClassName != "" {
+		dv.Spec.PVC.StorageClassName = &s.StorageClassName
 	}
-	if s.Config.Source.Type == "http" {
+	if s.SourceType == "http" {
 		dv.Spec.Source = &cdiv1.DataVolumeSource{
 			HTTP: &cdiv1.DataVolumeSourceHTTP{
-				URL: s.Config.Source.URL,
+				URL: s.SourceURL,
 			},
 		}
-	} else if s.Config.Source.Type == "registry" {
+	} else if s.SourceType == "registry" {
 		dv.Spec.Source = &cdiv1.DataVolumeSource{
 			Registry: &cdiv1.DataVolumeSourceRegistry{
-				URL: &s.Config.Source.URL,
+				URL: &s.SourceURL,
 			},
 		}
-	} else if s.Config.Source.Type == "blank" {
+	} else if s.SourceType == "blank" {
 		dv.Spec.Source = &cdiv1.DataVolumeSource{
 			Blank: &cdiv1.DataVolumeBlankImage{},
 		}
 	} else {
-		state.Put("error", fmt.Errorf("unkown data volume source type: %s", s.Config.Source.Type))
+		state.Put("error", fmt.Errorf("unkown data volume source type: %s", s.SourceType))
 		return multistep.ActionHalt
 	}
 	dv, err = cdiClient.DataVolumes(s.Namespace).Create(ctx, dv, metav1.CreateOptions{})
@@ -119,10 +124,9 @@ func (s *StepCreateDataVolume) Cleanup(state multistep.StateBag) {
 	_, halted := state.GetOk(multistep.StateHalted)
 	if cancelled || halted {
 		ui := state.Get("ui").(packer.Ui)
-		config := state.Get("config").(*Config)
 		cdiClient := state.Get("cdi_client").(cdiclientv1beta1.CdiV1beta1Interface)
 		ui.Say("Deleting data volume.")
-		err := cdiClient.DataVolumes(config.Namespace).Delete(context.Background(), config.Name, metav1.DeleteOptions{})
+		err := cdiClient.DataVolumes(s.Namespace).Delete(context.Background(), s.Name, metav1.DeleteOptions{})
 		if err != nil {
 			ui.Error(fmt.Sprintf("Error deleting data volume: %s", err))
 			return

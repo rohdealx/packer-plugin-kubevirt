@@ -15,16 +15,17 @@ source "kubevirt" "example" {
   ssh_username = "fedora"
   ssh_password = "fedora"
 
-  data_volume {
-    size = "5Gi"
-    source {
-      type = "registry"
-      url  = "docker://quay.io/kubevirt/fedora-cloud-container-disk-demo"
-    }
-  }
   disk {
-    name = "cloudinit"
+    type        = "datavolume"
+    name        = "example"
+    size        = "5Gi"
+    source_type = "registry"
+    source_url  = "docker://quay.io/kubevirt/fedora-cloud-container-disk-demo"
+  }
+
+  disk {
     type = "cloudinit"
+    name = "cloudinit"
     files = {
       userdata = local.user_data,
     }

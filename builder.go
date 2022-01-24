@@ -64,15 +64,20 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	state.Put("virt_client", virtClient)
 	state.Put("cdi_client", cdiClient)
 
-	disk := DiskConfig{
-		Name: b.config.Name,
-		Type: "datavolume",
-	}
-	b.config.Disks = append([]DiskConfig{disk}, b.config.Disks...)
-
 	steps := []multistep.Step{}
 	for _, disk := range b.config.Disks {
-		if disk.Type == "cloudinit" || disk.Type == "sysprep" {
+		if disk.Type == "datavolume" {
+			steps = append(steps, &StepCreateDataVolume{
+				Namespace:        b.config.Namespace,
+				Name:             disk.Name,
+				Size:             disk.Size,
+				Preallocation:    disk.Preallocation,
+				VolumeMode:       disk.VolumeMode,
+				StorageClassName: disk.StorageClassName,
+				SourceType:       disk.SourceType,
+				SourceURL:        disk.SourceURL,
+			})
+		} else if disk.Type == "cloudinit" || disk.Type == "sysprep" {
 			steps = append(steps, &StepCreateSecret{
 				Namespace:  b.config.Namespace,
 				Name:       disk.Name,
@@ -81,11 +86,6 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 		}
 	}
 	steps = append(steps,
-		&StepCreateDataVolume{
-			Namespace: b.config.Namespace,
-			Name:      b.config.Name,
-			Config:    b.config.DataVolume,
-		},
 		&StepCreateVirtualMachineInstance{},
 		&StepConnectSSH{},
 		&commonsteps.StepProvision{},

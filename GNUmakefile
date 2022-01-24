@@ -30,6 +30,13 @@ plugin-check: install-packer-sdc build
 testacc: dev
 	@PACKER_ACC=1 go test -count $(COUNT) -v $(TEST) -timeout=120m
 
+testsetup:
+	docker pull quay.io/kubevirt/fedora-cloud-container-disk-demo
+	kind load docker-image --name kubevirt quay.io/kubevirt/fedora-cloud-container-disk-demo
+
+testteardown:
+	kind delete cluster --name kubevirt
+
 generate: install-packer-sdc
 	@go generate ./...
 	packer-sdc renderdocs -src ./docs -dst ./.docs -partials ./docs-partials
