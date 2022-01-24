@@ -1,4 +1,3 @@
-//go:generate packer-sdc struct-markdown
 //go:generate packer-sdc mapstructure-to-hcl2 -type Config,DiskConfig,DataVolumeConfig,ContainerDiskConfig,CloudInitConfig,SysprepConfig
 
 package main
@@ -62,10 +61,8 @@ type Config struct {
 	CloudInits     []CloudInitConfig     `mapstructure:"cloud_init"`
 	Syspreps       []SysprepConfig       `mapstructure:"sysprep"`
 
-	// Runtime
 	disks []Disk
-
-	ctx interpolate.Context
+	ctx   interpolate.Context
 }
 
 type DataVolumeConfig struct {

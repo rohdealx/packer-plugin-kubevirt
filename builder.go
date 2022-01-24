@@ -42,8 +42,6 @@ func (b *Builder) Run(ctx context.Context, ui packer.Ui, hook packer.Hook) (pack
 	}
 	cdiClient := virtClient.CdiClient().CdiV1beta1()
 
-	// TODO move check this into multistep if validate
-	// TODO move delete this into multistep if delete
 	for _, dv := range b.config.DataVolumes {
 		if dv.Name != "" {
 			_, err = cdiClient.DataVolumes(b.config.Namespace).Get(ctx, dv.Name, metav1.GetOptions{})

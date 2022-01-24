@@ -32,16 +32,6 @@ dev: build
 test:
 	@go test -race -count $(COUNT) $(TEST) -timeout=3m
 
-install-packer-sdc:
-	@go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@${HASHICORP_PACKER_PLUGIN_SDK_VERSION}
-
-ci-release-docs: install-packer-sdc
-	@packer-sdc renderdocs -src docs -partials docs-partials/ -dst docs/
-	@/bin/sh -c "[ -d docs ] && zip -r docs.zip docs/"
-
-plugin-check: install-packer-sdc build
-	@packer-sdc plugin-check ${BINARY}
-
 testacc: dev $(KUBECONFIG)
 	@kubectl delete dv example || true
 	@PACKER_ACC=1 go test -count $(COUNT) -v $(TEST) -timeout=120m
@@ -61,6 +51,11 @@ teardown:
 	@kind delete cluster --name $(NAME)
 	@rm $(KUBECONFIG)
 
+install-packer-sdc:
+	@go install github.com/hashicorp/packer-plugin-sdk/cmd/packer-sdc@${HASHICORP_PACKER_PLUGIN_SDK_VERSION}
+
+plugin-check: install-packer-sdc build
+	@packer-sdc plugin-check ${BINARY}
+
 generate: install-packer-sdc
 	@go generate ./...
-	@packer-sdc renderdocs -src ./docs -dst ./.docs -partials ./docs-partials
